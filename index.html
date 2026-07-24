@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sound Portfolio · Aural Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1115; --panel:#161a20; --ink:#f2f3f5; --muted:#9aa0a8;
+    --line:#262b33; --line-strong:#3a414b; --accent:#5b8cff; --soft:#1a1f27;
+    --glow1:rgba(91,140,255,.10); --glow2:rgba(150,110,255,.10);
+  }
+  :root[data-theme="light"]{
+    --bg:#e6ebf6; --panel:#ffffff; --ink:#16203a; --muted:#566077;
+    --line:#dbe2f0; --line-strong:#c0cbe1; --accent:#3b6ef0; --soft:#e9eefb;
+    --glow1:rgba(59,110,240,.38); --glow2:rgba(168,99,214,.34);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter','Helvetica Neue','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+    color:var(--ink); background:var(--bg);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+    transition:background-color .4s ease,color .4s ease;
+  }
+  /* soft ambient backdrop (light mode) */
+  :root[data-theme="light"] body{
+    background:
+      radial-gradient(1100px 680px at 4% -14%, var(--glow1), transparent 56%),
+      radial-gradient(1040px 680px at 100% -6%, var(--glow2), transparent 58%),
+      linear-gradient(180deg,#f2f6fd 0%, #e6ebf6 100%);
+  }
+  /* decorative dots layer */
+  :root[data-theme="light"] .wrap::before{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:1;
+    background-image:radial-gradient(rgba(40,60,110,.11) 1px, transparent 1.4px);
+    background-size:19px 19px;
+  }
+  a{color:inherit;text-decoration:none;}
+  #bg{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:0 24px 80px;}
+
+  /* Top bar: theme + language toggles */
+  .topbar{
+    display:flex;justify-content:flex-end;gap:10px;
+    padding:22px 24px 0;max-width:1040px;margin:0 auto;position:relative;z-index:2;
+  }
+  .tgl{
+    font:inherit;font-size:13px;letter-spacing:.04em;color:var(--muted);
+    background:transparent;border:1px solid var(--line);border-radius:999px;
+    padding:7px 15px;cursor:pointer;transition:color .2s,border-color .2s;
+    display:inline-flex;align-items:center;justify-content:center;min-width:40px;
+  }
+  .tgl:hover{color:var(--ink);border-color:var(--line-strong);}
+
+  header{padding:64px 0 56px;text-align:center;}
+  .kicker{
+    display:inline-block;font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:20px;
+  }
+  :root[data-theme="light"] .kicker{
+    padding:7px 18px;border-radius:999px;font-weight:700;
+    background:linear-gradient(90deg,rgba(59,110,240,.16),rgba(168,99,214,.16));
+    border:1px solid var(--line);
+  }
+  h1.title{font-size:clamp(34px,6vw,56px);font-weight:600;letter-spacing:-.02em;margin:0;}
+  :root[data-theme="light"] h1.title{
+    background:linear-gradient(90deg,#16203a 0%, #3b6ef0 52%, #a863d6 100%);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+  }
+  .subtitle{
+    font-size:clamp(15px,2.4vw,18px);color:var(--muted);margin:18px auto 0;
+    max-width:600px;
+  }
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;}
+  .card{
+    display:flex;flex-direction:column;background:var(--panel);
+    border:1px solid var(--line);border-radius:18px;overflow:hidden;
+    transition:transform .35s cubic-bezier(.2,.8,.3,1),border-color .35s,box-shadow .35s,background-color .4s ease;
+  }
+  .card:hover{
+    transform:translateY(-6px);border-color:var(--line-strong);
+    box-shadow:0 18px 40px rgba(0,0,0,.18);
+  }
+  :root[data-theme="light"] .card{
+    background:linear-gradient(180deg,#ffffff 0%, #eaf0ff 100%);
+    border-color:var(--line);
+    box-shadow:0 16px 40px rgba(30,50,90,.14);
+  }
+  :root[data-theme="light"] .card:hover{
+    box-shadow:0 28px 60px rgba(30,50,90,.24);
+    border-color:var(--accent);transform:translateY(-8px);
+  }
+  .card .art{aspect-ratio:16/10;display:block;background:var(--soft);overflow:hidden;}
+  .card .art img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s cubic-bezier(.2,.8,.3,1);}
+  .card:hover .art img{transform:scale(1.04);}
+  .card .body{padding:24px 24px 26px;border-top:1px solid var(--line);transition:border-color .4s ease;}
+  .card .tag{
+    display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:12px;font-weight:600;opacity:.85;
+  }
+  .card h2{font-size:24px;font-weight:600;margin:0 0 10px;letter-spacing:-.01em;}
+  .card p{font-size:14.5px;color:var(--muted);margin:0 0 20px;}
+  .enter{
+    display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;
+    color:var(--accent);transition:gap .2s;
+  }
+  .card:hover .enter{gap:11px;}
+
+  footer{
+    text-align:center;margin-top:64px;padding-top:28px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--muted);letter-spacing:.02em;transition:border-color .4s ease,color .4s ease;
+  }
+
+  /* ---------- responsive: tablet & mobile ---------- */
+  @media (max-width:720px){
+    .wrap{padding:0 18px 56px;}
+    .topbar{padding:16px 18px 0;}
+    header{padding:48px 0 40px;}
+    .grid{grid-template-columns:1fr;gap:22px;}
+    .card .body{padding:20px 20px 22px;}
+    .card h2{font-size:22px;}
+    footer{margin-top:48px;padding-left:10px;padding-right:10px;}
+  }
+  @media (max-width:380px){
+    .wrap{padding:0 14px 48px;}
+    .topbar{padding:14px 14px 0;}
+    .tgl{padding:7px 13px;}
+    header{padding:40px 0 32px;}
+    .card .body{padding:18px;}
+  }
+  /* Touch devices: no hover lift, larger tap targets */
+  @media (hover:none){
+    .card:hover{transform:none;box-shadow:none;}
+    :root[data-theme="light"] .card:hover{box-shadow:none;}
+    .card:active{transform:scale(.99);}
+    .tgl{padding:9px 17px;min-width:44px;}
+  }
+  /* Respect notches / safe areas */
+  @supports (padding:env(safe-area-inset-top)){
+    .topbar{padding-top:max(16px,env(safe-area-inset-top));}
+    .wrap{padding-bottom:max(80px,calc(80px + env(safe-area-inset-bottom)));}
+  }
+</style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <div class="topbar">
+    <button class="tgl" id="themeBtn" type="button" aria-label="Toggle theme">☀</button>
+    <button class="tgl" id="langBtn" type="button" aria-label="Switch language">中文</button>
+  </div>
+
+  <div class="wrap">
+    <header>
+      <span class="kicker" data-i18n="kicker">SOUND WORKS</span>
+      <h1 class="title" data-i18n="title">Sound Portfolio</h1>
+      <p class="subtitle" data-i18n="subtitle">Two sound-driven interactive pieces — played instantly in the browser, no installation needed.</p>
+    </header>
+
+    <div class="grid">
+      <!-- 作品一：星海潮汐 -->
+      <a class="card" href="voice/index.html" target="_blank" rel="noopener">
+        <span class="art">
+          <img src="covers/voice.png" alt="Starlit Tides preview" loading="lazy">
+        </span>
+        <div class="body">
+          <span class="tag" data-i18n="card1.tag">VOICE · WAVES</span>
+          <h2 data-i18n="card1.title">Starlit Tides</h2>
+          <p data-i18n="card1.desc">Speak to stir the waves — louder sounds raise the swell; in stillness the night sky slowly fills with stars.</p>
+          <span class="enter" data-i18n="enter">Open ↗</span>
+        </div>
+      </a>
+
+      <!-- 作品二：大自然的交响乐 -->
+      <a class="card" href="nature/index.html" target="_blank" rel="noopener">
+        <span class="art">
+          <img src="covers/nature.png" alt="Symphony of Nature preview" loading="lazy">
+        </span>
+        <div class="body">
+          <span class="tag" data-i18n="card2.tag">NATURE · SYMPHONY</span>
+          <h2 data-i18n="card2.title">Symphony of Nature</h2>
+          <p data-i18n="card2.desc">Conduct a natural ensemble with your voice — wind, rain and birdsong answer your sounds, weaving an ambient piece that is uniquely yours.</p>
+          <span class="enter" data-i18n="enter">Open ↗</span>
+        </div>
+      </a>
+    </div>
+
+    <footer data-i18n="footer">Sound Portfolio · Pure front-end · All audio is processed locally in your browser.</footer>
+  </div>
+
+<script>
+"use strict";
+/* ---------- i18n ---------- */
+const I18N = {
+  en:{
+    kicker:"SOUND WORKS",
+    title:"Sound Portfolio",
+    subtitle:"Two sound-driven interactive pieces — played instantly in the browser, no installation needed.",
+    "card1.tag":"VOICE · WAVES", "card1.title":"Starlit Tides",
+    "card1.desc":"Speak to stir the waves — louder sounds raise the swell; in stillness the night sky slowly fills with stars.",
+    "card2.tag":"NATURE · SYMPHONY", "card2.title":"Symphony of Nature",
+    "card2.desc":"Conduct a natural ensemble with your voice — wind, rain and birdsong answer your sounds, weaving an ambient piece that is uniquely yours.",
+    enter:"Open ↗",
+    footer:"Sound Portfolio · Pure front-end · All audio is processed locally in your browser.",
+    btn:"中文"
+  },
+  zh:{
+    kicker:"作品集",
+    title:"声音作品集",
+    subtitle:"两个以声音为交互核心的温柔小作品 —— 打开即玩，无需安装。",
+    "card1.tag":"声音 · 潮汐", "card1.title":"星海潮汐",
+    "card1.desc":"用声音唤起浪花，声音越大浪越高；或在安静中让夜空缓缓亮起，星星越来越多。",
+    "card2.tag":"自然 · 交响", "card2.title":"大自然的交响乐",
+    "card2.desc":"用声音指挥一场自然合奏：风声、雨声、鸟鸣随你的发声此起彼伏，谱写专属的环境乐章。",
+    enter:"进入 →",
+    footer:"声音作品集 · 纯前端实现 · 所有声音仅在本地浏览器处理",
+    btn:"EN"
+  }
+};
+const LKEY="skit-lang", TKEY="skit-theme";
+const html=document.documentElement;
+const langBtn=document.getElementById("langBtn");
+const themeBtn=document.getElementById("themeBtn");
+
+function applyLang(lang){
+  const d=I18N[lang];
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const k=el.getAttribute("data-i18n");
+    if(d[k]!=null) el.textContent=d[k];
+  });
+  langBtn.textContent=d.btn;
+  html.setAttribute("lang",lang);
+  try{localStorage.setItem(LKEY,lang);}catch(e){}
+}
+function applyTheme(theme){
+  html.setAttribute("data-theme",theme);
+  themeBtn.textContent = theme==="dark" ? "☀" : "☾";
+  themeBtn.setAttribute("aria-label", theme==="dark" ? "Switch to light mode" : "Switch to dark mode");
+  try{localStorage.setItem(TKEY,theme);}catch(e){}
+  refreshDots();
+}
+langBtn.addEventListener("click",()=>{
+  applyLang(html.getAttribute("lang")==="zh"?"en":"zh");
+});
+themeBtn.addEventListener("click",()=>{
+  applyTheme(html.getAttribute("data-theme")==="dark"?"light":"dark");
+});
+
+/* initial state: theme default dark, lang default en */
+let savedTheme="dark";
+try{const t=localStorage.getItem(TKEY); if(t==="dark"||t==="light") savedTheme=t;}catch(e){}
+let savedLang="en";
+try{const l=localStorage.getItem(LKEY); if(l==="zh"||l==="en") savedLang=l;}catch(e){}
+applyTheme(savedTheme);
+applyLang(savedLang);
+
+/* ---------- subtle background animation ---------- */
+const cv=document.getElementById("bg"), cx=cv.getContext("2d");
+let W,H,DPR,dots=[],dotColor="rgba(255,255,255,.05)";
+function refreshDots(){
+  dotColor = html.getAttribute("data-theme")==="dark"
+    ? "rgba(255,255,255,.05)" : "rgba(0,0,0,.04)";
+}
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  W=window.innerWidth; H=window.innerHeight;
+  cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+  cv.style.width=W+"px"; cv.style.height=H+"px";
+  cx.setTransform(DPR,0,0,DPR,0,0);
+  const n=Math.min(48,Math.floor(W*H/26000));
+  dots=[];
+  for(let i=0;i<n;i++){
+    dots.push({
+      x:Math.random()*W, y:Math.random()*H,
+      r:Math.random()*1.3+0.4,
+      vx:(Math.random()-0.5)*0.12, vy:(Math.random()-0.5)*0.12,
+      a:Math.random()*0.5+0.3
+    });
+  }
+}
+window.addEventListener("resize",resize); resize();
+function tick(){
+  cx.clearRect(0,0,W,H);
+  for(const d of dots){
+    d.x+=d.vx; d.y+=d.vy;
+    if(d.x<-5)d.x=W+5; if(d.x>W+5)d.x=-5;
+    if(d.y<-5)d.y=H+5; if(d.y>H+5)d.y=-5;
+    cx.globalAlpha=d.a; cx.fillStyle=dotColor;
+    cx.beginPath(); cx.arc(d.x,d.y,d.r,0,6.2832); cx.fill();
+  }
+  cx.globalAlpha=1;
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

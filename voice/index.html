@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>星海潮汐 · 声音里的温柔世界</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#fbf3e4; --ink:#5a4632; --soft:#8a6d4f;
+    --accent:#ff9bb3; --accent2:#7fc7ff; --gold:#ffd27a; --shadow:rgba(120,90,50,.25);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;}
+  body{font-family:'ZCOOL KuaiLe','Baloo 2','STKaiti','KaiTi','Comic Sans MS',cursive,sans-serif;color:var(--ink);background:var(--paper);user-select:none;}
+  #game{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:1;}
+  .overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;text-align:center;}
+  .hidden{display:none !important;}
+  .panel{background:linear-gradient(180deg,rgba(255,252,244,.94),rgba(251,243,228,.94));border:3px solid #e7d4b3;border-radius:28px;box-shadow:0 18px 40px var(--shadow), inset 0 0 0 6px rgba(255,255,255,.35);padding:30px 34px;max-width:880px;width:100%;position:relative;}
+  .panel::after{content:"";position:absolute;inset:10px;border-radius:20px;border:2px dashed rgba(180,150,110,.35);pointer-events:none;}
+  h1.title{font-size:clamp(38px,7vw,72px);margin:0 0 6px;color:#6b4f33;letter-spacing:4px;text-shadow:2px 3px 0 #ffe6c2, 4px 6px 8px var(--shadow);}
+  .subtitle{font-size:clamp(16px,2.6vw,22px);color:var(--soft);margin:0 0 22px;}
+  .cards{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;}
+  .theme-card{flex:1 1 280px;max-width:330px;min-height:230px;border-radius:24px;cursor:pointer;position:relative;overflow:hidden;border:3px solid #fff;box-shadow:0 12px 26px var(--shadow);transition:transform .35s cubic-bezier(.2,.9,.3,1.4), box-shadow .35s;padding:22px;color:#4a3826;display:flex;flex-direction:column;justify-content:flex-end;text-align:left;}
+  .theme-card:hover{transform:translateY(-10px) rotate(-1deg);box-shadow:0 22px 40px var(--shadow);}
+  .theme-card.wave{background:linear-gradient(160deg,#bfe9ff,#ffe2c2);}
+  .theme-card.star{background:linear-gradient(160deg,#2a2a55,#5b4b8a 70%,#a07bb0);color:#fff;}
+  .theme-card .emoji{position:absolute;top:14px;right:16px;width:64px;height:64px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.15));}
+  .theme-card h2{font-size:30px;margin:0 0 6px;}
+  .theme-card p{font-size:16px;margin:0;opacity:.92;line-height:1.5;}
+  .btn{font-family:inherit;cursor:pointer;border:none;border-radius:999px;padding:12px 26px;font-size:18px;color:#fff;background:linear-gradient(180deg,#ffb06b,#ff8fae);box-shadow:0 8px 18px rgba(255,140,150,.4), inset 0 2px 0 rgba(255,255,255,.5);transition:transform .2s, filter .2s;letter-spacing:1px;}
+  .btn:hover{transform:scale(1.06);filter:brightness(1.05);}
+  .btn:active{transform:scale(.97);}
+  .btn.ghost{background:linear-gradient(180deg,#cdeaff,#a9d8ff);color:#3a5a78;box-shadow:0 8px 18px rgba(120,180,230,.4);}
+  .btn.gold{background:linear-gradient(180deg,#ffe08a,#ffbf57);color:#7a5a20;}
+  .btn.small{padding:8px 16px;font-size:15px;}
+  .lang-pill{position:fixed;top:16px;right:16px;z-index:30;background:rgba(255,255,255,.85);border:2px solid #e7d4b3;border-radius:999px;padding:6px 14px;cursor:pointer;font-size:15px;color:var(--ink);box-shadow:0 4px 10px var(--shadow);}
+  #hud .topbar{position:fixed;top:0;left:0;right:0;z-index:12;display:flex;justify-content:space-between;align-items:flex-start;padding:14px 18px;pointer-events:none;}
+  #hud .topbar > *{pointer-events:auto;}
+  .level-tag{background:rgba(255,252,244,.9);border:2px solid #e7d4b3;border-radius:18px;padding:8px 16px;box-shadow:0 6px 14px var(--shadow);text-align:left;line-height:1.3;}
+  .level-tag .lname{font-size:20px;color:#6b4f33;}
+  .level-tag .lsub{font-size:13px;color:var(--soft);}
+  .timer-box{background:rgba(255,252,244,.9);border:2px solid #e7d4b3;border-radius:18px;padding:8px 18px;box-shadow:0 6px 14px var(--shadow);text-align:center;min-width:110px;}
+  .timer-box .tnum{font-size:30px;color:#d2691e;line-height:1;}
+  .timer-box .tlabel{font-size:12px;color:var(--soft);}
+  .hud-tools{display:flex;gap:8px;}
+  #hud .dock{position:fixed;left:0;right:0;bottom:0;z-index:12;display:flex;justify-content:center;align-items:flex-end;gap:18px;padding:14px 18px 18px;flex-wrap:wrap;}
+  .meter-wrap{background:rgba(255,252,244,.92);border:2px solid #e7d4b3;border-radius:20px;padding:10px 14px;box-shadow:0 8px 18px var(--shadow);display:flex;gap:14px;align-items:center;}
+  #meter{display:block;border-radius:10px;}
+  .meter-info{text-align:left;font-size:13px;color:var(--soft);line-height:1.4;min-width:96px;}
+  .meter-info b{color:#d2691e;font-size:18px;}
+  .progress-wrap{background:rgba(255,252,244,.92);border:2px solid #e7d4b3;border-radius:20px;padding:10px 16px;box-shadow:0 8px 18px var(--shadow);min-width:240px;}
+  .progress-wrap .plabel{font-size:13px;color:var(--soft);display:flex;justify-content:space-between;}
+  .pbar{height:16px;background:#eadfca;border-radius:999px;overflow:hidden;margin-top:6px;position:relative;}
+  .pbar .fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#7fc7ff,#ffd27a,#ff9bb3);transition:width .25s;}
+  .pticks{position:absolute;top:0;bottom:0;width:2px;background:rgba(120,90,50,.5);}
+  .pticks.t60{left:60%;} .pticks.t80{left:80%;} .pticks.t100{left:100%;}
+  .enc-box{background:rgba(255,252,244,.95);border:2px solid #e7d4b3;border-radius:20px;padding:10px 18px;box-shadow:0 8px 18px var(--shadow);max-width:360px;font-size:17px;color:#6b4f33;min-height:24px;display:flex;align-items:center;transition:opacity .4s;}
+  .center-stage{position:fixed;inset:0;z-index:15;display:flex;align-items:center;justify-content:center;flex-direction:column;pointer-events:none;}
+  .start-card{pointer-events:auto;}
+  .count-num{font-size:clamp(90px,22vw,200px);color:#fff;text-shadow:0 6px 16px rgba(0,0,0,.3);animation:pop .9s ease;}
+  @keyframes pop{0%{transform:scale(.3);opacity:0;}40%{transform:scale(1.1);opacity:1;}100%{transform:scale(1);opacity:.9;}}
+  .result-stars{font-size:38px;margin:8px 0 12px;letter-spacing:6px;color:#f5a623;text-shadow:0 2px 6px rgba(245,166,35,.3);}
+  .result-enc{font-size:20px;color:#6b4f33;line-height:1.6;margin:8px 0 18px;white-space:pre-line;}
+  .result-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .note{font-size:13px;color:var(--soft);margin-top:14px;line-height:1.5;}
+  .fade{animation:fadein .6s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  .mic-hint{font-size:16px;color:var(--soft);margin:10px 0;}
+  .info-btn{position:fixed;bottom:18px;right:18px;z-index:30;width:44px;height:44px;border-radius:50%;border:2px solid #e7d4b3;background:rgba(255,255,255,.88);box-shadow:0 4px 12px var(--shadow);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+  .info-btn:hover{transform:scale(1.1);}
+  .info-modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(30,20,10,.45);padding:20px;}
+  .info-panel{background:linear-gradient(180deg,rgba(255,252,244,.97),rgba(251,243,228,.97));border:3px solid #e7d4b3;border-radius:24px;box-shadow:0 18px 40px var(--shadow);padding:28px 30px;max-width:520px;width:100%;max-height:80vh;overflow-y:auto;position:relative;text-align:left;line-height:1.7;font-size:15px;color:#5a4632;}
+  .info-panel h2{font-size:24px;color:#6b4f33;margin:0 0 14px;text-align:center;}
+  .info-panel h3{font-size:17px;color:#6b4f33;margin:16px 0 6px;}
+  .info-panel p{margin:6px 0;}
+  .info-close{position:absolute;top:12px;right:16px;font-size:22px;cursor:pointer;color:var(--soft);background:none;border:none;line-height:1;}
+  .info-close:hover{color:#d2691e;}
+</style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div class="lang-pill" id="langPill">EN</div>
+  <button class="info-btn" id="btnInfo" title="说明">❓</button>
+
+  <div class="info-modal hidden" id="infoModal">
+    <div class="info-panel">
+      <button class="info-close" id="btnInfoClose">✕</button>
+      <h2 id="infoTitle">游戏说明</h2>
+      <div id="infoBody"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="home">
+    <div class="panel fade">
+      <h1 class="title" data-i18n="title">星海潮汐</h1>
+      <p class="subtitle" data-i18n="subtitle">声音里的温柔世界 · 一个用声音陪伴成长的小游戏</p>
+      <p class="subtitle" style="margin-top:-10px" data-i18n="chooseTheme">请选择你的旅程</p>
+      <div class="cards">
+        <div class="theme-card wave" data-theme="wave">
+          <div class="emoji"><svg viewBox="0 0 64 64" width="64" height="64"><path d="M12 42 Q16 50 32 52 Q48 50 52 42 L48 39 Q32 44 16 39 Z" fill="#b5763a" stroke="#8a5528" stroke-width="1.5"/><path d="M16 42 Q32 46 48 42" fill="none" stroke="rgba(138,85,40,.4)" stroke-width="1"/><line x1="32" y1="38" x2="32" y2="12" stroke="#7a5230" stroke-width="2.5" stroke-linecap="round"/><path d="M32 14 Q46 24 44 37 L32 37 Z" fill="#fff8ee" stroke="rgba(180,160,130,.5)" stroke-width="1"/><path d="M32 12 L39 15.5 L32 19 Z" fill="#ff8c5a"/><path d="M6 54 Q12 50 18 54 Q24 58 30 54 Q36 50 42 54 Q48 58 54 54 Q58 51 62 54" fill="none" stroke="#5fb4f5" stroke-width="3" stroke-linecap="round"/><path d="M4 59 Q10 55 16 59 Q22 63 28 59 Q34 55 40 59 Q46 63 52 59 Q58 55 64 59" fill="none" stroke="#8fd0ff" stroke-width="2.5" stroke-linecap="round" opacity=".7"/></svg></div>
+          <h2 data-i18n="themeWaveName">呐喊逐浪</h2>
+          <p data-i18n="themeWaveDesc">用声音唤起浪花，声音越大，浪越高、越灿烂。</p>
+        </div>
+        <div class="theme-card star" data-theme="star">
+          <div class="emoji"><svg viewBox="0 0 64 64" width="64" height="64"><circle cx="30" cy="30" r="16" fill="#fff4cf" stroke="rgba(220,200,140,.6)" stroke-width="1.5"/><circle cx="25" cy="26" r="3" fill="rgba(230,215,160,.5)"/><circle cx="35" cy="35" r="2.4" fill="rgba(230,215,160,.5)"/><circle cx="32" cy="22" r="1.8" fill="rgba(230,215,160,.5)"/><path d="M50 12 l1.8 4.2 4.2 1.8 -4.2 1.8 -1.8 4.2 -1.8 -4.2 -4.2 -1.8 4.2 -1.8 Z" fill="#ffe9b0"/><path d="M14 46 l1.4 3.2 3.2 1.4 -3.2 1.4 -1.4 3.2 -1.4 -3.2 -3.2 -1.4 3.2 -1.4 Z" fill="#ffe9b0" opacity=".85"/><path d="M52 42 l1 2.4 2.4 1 -2.4 1 -1 2.4 -1 -2.4 -2.4 -1 2.4 -1 Z" fill="#cfe3ff" opacity=".9"/><circle cx="12" cy="16" r="1.5" fill="#fff" opacity=".8"/><circle cx="54" cy="28" r="1.2" fill="#fff" opacity=".7"/><circle cx="20" cy="10" r="1" fill="#ffe9b0" opacity=".7"/></svg></div>
+          <h2 data-i18n="themeStarName">静观星海</h2>
+          <p data-i18n="themeStarDesc">在安静中，让夜空缓缓亮起，星星越来越多。</p>
+        </div>
+      </div>
+      <p class="note" data-i18n="homeNote">小贴士：游戏需要麦克风来聆听你的声音，请允许使用麦克风。</p>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="hud">
+    <div class="topbar">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <button class="btn ghost small" id="btnHome" title="返回首页" data-i18n-title="btnHomeTitle">🏠</button>
+        <div class="level-tag">
+          <div class="lname" id="hudLevelName">—</div>
+          <div class="lsub" id="hudLevelSub">—</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div class="timer-box">
+          <div class="tnum" id="hudTimer">--</div>
+          <div class="tlabel" id="hudTimerLabel">--</div>
+        </div>
+        <div class="hud-tools">
+          <button class="btn ghost small" id="btnSound">🔊</button>
+          <button class="btn ghost small" id="btnBack">↩</button>
+        </div>
+      </div>
+    </div>
+    <div class="center-stage" id="centerStage"></div>
+    <div class="dock">
+      <div class="meter-wrap">
+        <canvas id="meter" width="200" height="64"></canvas>
+        <div class="meter-info">
+          <div data-i18n="volLabel">声音强度</div>
+          <b id="volNum">0</b>
+          <div id="dbNum" style="font-size:11px;">~ 0 dB</div>
+          <div style="font-size:11px;" data-i18n="histLabel">近30秒声音记录</div>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="plabel"><span data-i18n="goalLabel">本关目标</span><span id="goalPct">0%</span></div>
+        <div class="pbar">
+          <div class="pticks t60"></div><div class="pticks t80"></div><div class="pticks t100"></div>
+          <div class="fill" id="goalFill"></div>
+        </div>
+      </div>
+      <div class="enc-box" id="encBox" data-i18n="encStart">准备好，就开始吧！</div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="result">
+    <div class="panel fade">
+      <h1 class="title" id="resultTitle" style="font-size:46px;">🌟</h1>
+      <div class="result-stars" id="resultStars">★★★</div>
+      <p class="result-enc" id="resultEnc">—</p>
+      <div class="result-btns" id="resultBtns"></div>
+    </div>
+  </div>
+
+<script>
+"use strict";
+const I18N = {
+  zh:{
+    title:"星海潮汐", subtitle:"声音里的温柔世界 · 一个用声音陪伴成长的小游戏",
+    chooseTheme:"请选择你的旅程",
+    themeWaveName:"呐喊逐浪", themeWaveDesc:"用声音唤起浪花，声音越大，浪越高、越灿烂。",
+    themeStarName:"静观星海", themeStarDesc:"在安静中，让夜空缓缓亮起，星星越来越多。",
+    homeNote:"小贴士：游戏需要麦克风来聆听你的声音，请允许使用麦克风。",
+    start:"开始", back:"返回首页", next:"下一关", replay:"再来一次",
+    langToggle:"EN",
+    volLabel:"声音强度", histLabel:"近30秒声音记录",
+    goalLabel:"本关目标", goalFull:"圆满达成",
+    timerLeft:"剩余时间", timerRun:"已进行",
+    levelLabel:"第 {n} 关", endless:"无尽探索",
+    waveTag:"呐喊逐浪", starTag:"静观星海",
+    encStart:"准备好，就开始吧！",
+    micTitle:"正在聆听你的声音…",
+    micHint:"请允许浏览器使用麦克风，这是游戏唯一的数据来源。",
+    micErr:"没能连接到麦克风。",
+    micFallback:"用点击模拟声音继续体验",
+    countGo:"开始！",
+    paused:"已暂停",
+    wave_low:"轻轻吸一口气，试着把声音放出来吧～",
+    wave_mid:"再大声一点点，浪花会更欢快！",
+    wave_high:"太棒了！海浪正随着你的声音翻涌！",
+    wave_none:"还没有声音呢，深呼吸，喊出来试试看。",
+    star_loud:"把声音轻轻收起来，看星星慢慢醒来。",
+    star_quiet:"好安静呀，星空正为你一点点铺开。",
+    wave_t0:"每一次发声，海面都轻轻回应了你。再来一次，浪花会更高！",
+    wave_t60:"海浪已为你跳起温柔的舞，真了不起！",
+    wave_t80:"汹涌的浪花在为你欢呼，气势如虹！",
+    wave_t100:"你与大海共鸣，整片海洋都在为你歌唱！",
+    star_t0:"你已经点亮了几颗小星星，慢慢来，星海会越来越大。",
+    star_t60:"星河初现，宁静而美好，你做得很好。",
+    star_t80:"银河横贯天际，你的安静真了不起。",
+    star_t100:"你与星空融为一体，静谧圆满，温柔至极。",
+    endlessDone:"你探索了 {t} 秒，声音里的世界因你而生动。",
+    wave_motto_t100:"🌊 整片海洋都在为你欢呼，你就是最耀眼的浪花！",
+    wave_motto_t80:"🌊 浪潮因你而澎湃，你真的很了不起！",
+    wave_motto_t60:"🌊 浪花已为你跳跃，继续加油，大海在等你！",
+    wave_motto_t0:"🌊 每一朵浪花都记住了你的声音，再试一次吧！",
+    star_motto_t100:"🌌 整片星河为你闪耀，你的宁静温柔而强大！",
+    star_motto_t80:"🌌 银河因你而流淌，安静的力量真了不起！",
+    star_motto_t60:"🌌 星星已为你亮起，继续守护这份宁静吧！",
+    star_motto_t0:"🌌 第一颗星星已悄悄亮起，再安静一点点就好！",
+    endlessMottoWave:"🌊 你的探索永不止步，大海因你而生动！",
+    endlessMottoStar:"🌌 你的宁静让星空永不黯淡，继续前行吧！",
+    hintLoud:"\n（再大声一点、多发几声，稍微努力一下就可以通过啦，再来一次吧！）",
+    hintQuiet:"\n（再安静一点，稍微努力一下就可以通过啦，再来一次吧！）",
+    hintUnlock:"\n（已解锁下一关，也可以再练一次拿更好的成绩！）",
+    fallbackHint:"（{t}：按住空格 / 点击 制造声音）",
+    btnHomeTitle:"返回首页",
+    infoTitle:"游戏说明",
+    infoHowTo:"🎮 操作说明",
+    infoHowToBody:"① 选择主题卡片进入游戏；\n② 允许浏览器使用麦克风；\n③ 「呐喊逐浪」——对着麦克风发声，声音越大浪花越高；\n④ 「静观星海」——保持安静，星空会缓缓亮起；\n⑤ 每关有目标进度，达到 60% 以上即可解锁下一关；\n⑥ 若无麦克风，可点击右上角 🔊 切换为点击/空格模拟声音。",
+    infoAbout:"🌊 开发背景",
+    infoAboutBody:"「星海潮汐」是一款以声音为交互核心的温柔小游戏，专为儿童与家庭设计。\n\n我们相信声音是情感表达最自然的方式——孩子的一声呐喊、一次安静，都值得被看见。游戏用海浪与星空回应孩子的声音，让他们在玩耍中感受表达与宁静的力量。\n\n本游戏为纯前端实现，无需安装，打开即玩。所有声音数据仅在本地浏览器中处理，不会上传任何信息。",
+    infoClose:"关闭"
+  },
+  en:{
+    title:"Star & Tide", subtitle:"A gentle world made of sound · a game that grows with you",
+    chooseTheme:"Choose your journey",
+    themeWaveName:"Shout the Waves", themeWaveDesc:"Your voice raises the waves — louder makes them taller and brighter.",
+    themeStarName:"Still Star Sea", themeStarDesc:"In the quiet, the night sky slowly lights up, star by star.",
+    homeNote:"Tip: the game listens through your microphone. Please allow microphone access.",
+    start:"Start", back:"Home", next:"Next", replay:"Retry",
+    langToggle:"中文",
+    volLabel:"Sound", histLabel:"Last 30s",
+    goalLabel:"Goal", goalFull:"Complete!",
+    timerLeft:"Time left", timerRun:"Elapsed",
+    levelLabel:"Level {n}", endless:"Endless",
+    waveTag:"Shout the Waves", starTag:"Still Star Sea",
+    encStart:"When you are ready, begin!",
+    micTitle:"Listening to your voice…",
+    micHint:"Please allow the browser to use your microphone — it is the only data source.",
+    micErr:"Could not connect to the microphone.",
+    micFallback:"Continue with tap-to-simulate sound",
+    countGo:"Go!",
+    paused:"Paused",
+    wave_low:"Take a breath and try letting your voice out~",
+    wave_mid:"A little louder — the waves will cheer more!",
+    wave_high:"Wonderful! The waves surge with your voice!",
+    wave_none:"No sound yet — breathe deep and give a shout.",
+    star_loud:"Softly gather your voice; watch the stars wake.",
+    star_quiet:"So quiet — the starry sky unfolds for you.",
+    wave_t0:"Every sound you made, the sea gently answered. Try again — the waves will rise higher!",
+    wave_t60:"The waves danced a tender dance for you — bravo!",
+    wave_t80:"Roaring waves cheer for you, full of spirit!",
+    wave_t100:"You resonated with the ocean; the whole sea sings for you!",
+    star_t0:"You already lit a few little stars. Take your time — the sea of stars will grow.",
+    star_t60:"A river of stars appears, calm and beautiful — well done.",
+    star_t80:"The galaxy stretches across the sky; your quiet is amazing.",
+    star_t100:"You became one with the stars — serene, whole, and tender.",
+    endlessDone:"You explored for {t} seconds; the world of sound came alive because of you.",
+    wave_motto_t100:"🌊 The whole ocean cheers for you — you are the brightest wave!",
+    wave_motto_t80:"🌊 The waves surge because of you — truly amazing!",
+    wave_motto_t60:"🌊 The waves are dancing for you — keep going, the sea awaits!",
+    wave_motto_t0:"🌊 Every wave remembers your voice — try once more!",
+    star_motto_t100:"🌌 The entire galaxy shines for you — your calm is gentle and powerful!",
+    star_motto_t80:"🌌 The milky way flows because of you — the power of quiet is amazing!",
+    star_motto_t60:"🌌 Stars have lit up for you — keep guarding this serenity!",
+    star_motto_t0:"🌌 The first star has quietly appeared — just a little more quiet!",
+    endlessMottoWave:"🌊 Your exploration never stops — the sea comes alive because of you!",
+    endlessMottoStar:"🌌 Your calm keeps the stars shining — keep going!",
+    hintLoud:"\n(A little louder and more voices — just a bit more effort and you'll pass. Try again!)",
+    hintQuiet:"\n(A little quieter — just a bit more effort and you'll pass. Try again!)",
+    hintUnlock:"\n(Next level unlocked! You can also retry for a better score!)",
+    fallbackHint:"({t}: hold Space / tap to make sound)",
+    btnHomeTitle:"Back to home",
+    infoTitle:"About",
+    infoHowTo:"🎮 How to Play",
+    infoHowToBody:"① Pick a theme card to start;\n② Allow microphone access in your browser;\n③ \"Shout the Waves\" — speak/shout into the mic, louder makes bigger waves;\n④ \"Still Star Sea\" — stay quiet and watch the starry sky light up;\n⑤ Reach 60%+ of the goal to unlock the next level;\n⑥ No mic? Tap 🔊 to switch to tap/space-bar sound simulation.",
+    infoAbout:"🌊 Background",
+    infoAboutBody:"\"Star & Tide\" is a gentle voice-driven mini game designed for children and families.\n\nWe believe voice is the most natural form of emotional expression — a child's shout or silence deserves to be seen. The game responds with waves and starlight, letting kids feel the power of expression and calm through play.\n\nThis game is pure front-end, no installation needed. All audio data is processed locally in your browser — nothing is ever uploaded.",
+    infoClose:"Close"
+  }
+};
+let lang = localStorage.getItem("lang") || "en";
+
+/**
+ * Translate a key to the current language string.
+ * @param {string} k - i18n key
+ * @returns {string} Translated text or the key itself if not found
+ */
+const T = k => (I18N[lang][k] != null ? I18N[lang][k] : k);
+
+/** Linear interpolation between a and b by factor t. */
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/** Clamp value v between min a and max b. */
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/** Generate a random float between a and b. */
+const rand=(a,b)=>a+Math.random()*(b-a);
+
+/**
+ * Draw a rounded rectangle path on the given context.
+ * @param {CanvasRenderingContext2D} c - Target context
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} w - Width
+ * @param {number} h - Height
+ * @param {number} r - Corner radius
+ */
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+
+/** Apply i18n translations to all elements with data-i18n / data-i18n-title attributes. */
+function setI18n(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=T(el.dataset.i18n);});
+  document.querySelectorAll("[data-i18n-title]").forEach(el=>{el.title=T(el.dataset.i18nTitle);});
+  const pill=document.getElementById("langPill"); if(pill) pill.textContent=T("langToggle");
+}
+
+/**
+ * Format seconds into a readable time string (e.g. "1:05").
+ * @param {number} s - Seconds
+ * @returns {string} Formatted time
+ */
+function fmtTime(s){s=Math.max(0,Math.ceil(s));const m=Math.floor(s/60);const ss=s%60;return (m>0?m+":":"")+String(ss).padStart(m>0?2:1,"0");}
+
+const wasTest = false; // Test mode: enable 5-second levels for quick result preview
+const LEVELS = wasTest
+  ? [{id:1,duration:5}]
+  : [
+      {id:1,duration:30},
+      {id:2,duration:50},
+      {id:3,duration:90},
+      {id:4,duration:120},
+      {id:5,duration:Infinity}
+    ];
+const state={
+  screen:"home",
+  theme:null,
+  levelIndex:0,
+  started:false,
+  running:false,
+  countdown:0,
+  timeLeft:0,
+  elapsed:0,
+  score:0,
+  target:0,
+  vol:0,
+  rawVol:0,
+  history:[],
+  histAccum:0,
+  encKey:null,
+  paused:false,
+  audioFallback:false,
+  fallbackVol:0
+};
+let audioCtx=null, analyser=null, micData=null, audioReady=false;
+
+/**
+ * Initialize microphone audio input via Web Audio API.
+ * @returns {Promise<boolean>} True if mic access was granted
+ */
+async function initAudio(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+    });
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=audioCtx.createMediaStreamSource(stream);
+    analyser=audioCtx.createAnalyser();
+    analyser.fftSize=1024;
+    src.connect(analyser);
+    micData=new Uint8Array(analyser.fftSize);
+    audioReady=true;
+    return true;
+  }catch(e){
+    audioReady=false;
+    return false;
+  }
+}
+/**
+ * Get the current normalized volume level (0~1) from mic or fallback.
+ * @returns {number} Volume level between 0 and 1
+ */
+function getVolume(){
+  if(state.audioFallback){
+    return state.fallbackVol;
+  }
+  if(!audioReady||!analyser) return 0;
+  analyser.getByteTimeDomainData(micData);
+  let sum=0;
+  for(let i=0;i<micData.length;i++){const v=(micData[i]-128)/128;sum+=v*v;}
+  const rms=Math.sqrt(sum/micData.length);
+  return clamp(rms*3.2,0,1);
+}
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+const meter=document.getElementById("meter");
+const mctx=meter.getContext("2d");
+let W=0,H=0,DPR=1;
+
+/** Resize the canvas to match the window size with device pixel ratio scaling. */
+function resize(){
+  DPR=Math.min(2,window.devicePixelRatio||1);
+  W=window.innerWidth; H=window.innerHeight;
+  canvas.width=W*DPR; canvas.height=H*DPR;
+  canvas.style.width=W+"px"; canvas.style.height=H+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener("resize",resize); resize();
+let scene={clouds:[],flowers:[],trees:[],butterflies:[],birds:[],stars:[],moon:null,sun:null,particles:[],seaItems:[],boats:[]};
+let homeMoon={x:0,y:0,r:30}; // Home page moon random position + size (randomized on each load)
+homeMoon={x:rand(W*0.12,W*0.88), y:rand(H*0.05,H*0.2), r:30*rand(0.8,1.2)};
+/**
+ * Build all scene objects (clouds, flowers, boats, fish, birds, stars, etc.) for the given theme.
+ * @param {string} theme - "wave" or "star"
+ */
+function buildScene(theme){
+  scene={clouds:[],flowers:[],trees:[],butterflies:[],birds:[],stars:[],moon:null,sun:null,particles:[],seaItems:[],boats:[]};
+  const cloudN = theme==="star"?5:7;
+  for(let i=0;i<cloudN;i++){
+    scene.clouds.push({x:rand(0,W),y:rand(H*0.05,H*0.4),s:rand(.7,1.5),sp:rand(6,16)*(Math.random()<.5?-1:1)});
+  }
+  for(let i=0;i<14;i++){
+    scene.flowers.push({x:rand(0,W),y:H-rand(0,40),c:["#ff9bb3","#ffd27a","#b6e3a7","#c9a7ff","#ffb56b"][i%5],s:rand(.7,1.3),ph:rand(0,6)});
+  }
+  if(theme==="wave"){
+    // Sun at random position
+    scene.sun={x:rand(W*0.15,W*0.85), y:rand(H*0.08,H*0.28)};
+    // Distant boats drifting right-to-left, with random cargo ships
+    const boatN=Math.floor(rand(2,5));
+    for(let i=0;i<boatN;i++){
+      const isShip=Math.random()<0.3;
+      scene.boats.push({x:rand(0,W),s:rand(.6,1.1),sp:rand(10,22),ph:rand(0,6),type:isShip?"ship":"sail"});
+    }
+    // Swimming fish in the sea, 5 species randomly generated
+    const fishN=Math.floor(rand(3,7));
+    for(let i=0;i<fishN;i++){
+      const kind=Math.floor(rand(0,5));
+      const dir=Math.random()<.5?-1:1;
+      scene.seaItems.push({
+        type:"fish", kind:kind,
+        x:rand(W*0.05,W*0.95), y:rand(H*0.66,H*0.92),
+        vx:rand(10,35)*dir, s:rand(.7,1.3), ph:rand(0,6)
+      });
+    }
+    // Seagulls (random flight direction)
+    for(let i=0;i<5;i++){ const dir=Math.random()<.5?-1:1; scene.birds.push({x:rand(0,W),y:rand(H*0.08,H*0.35),sp:rand(18,42),ph:rand(0,6),s:rand(.7,1.2),dir:dir}); }
+  }
+  if(theme==="star"){
+    for(let i=0;i<4;i++){
+      scene.butterflies.push({x:rand(0,W),y:rand(H*0.3,H*0.7),vx:rand(-20,20),vy:rand(-12,12),ph:rand(0,6),s:rand(.7,1.2)});
+    }
+  }
+  if(theme==="star"){
+    const maxStars=160;
+    for(let i=0;i<maxStars;i++){
+      scene.stars.push({
+        x:rand(0,W), y:rand(0,H*0.62), r:rand(.6,2.2),
+        ph:rand(0,6.28), sp:rand(.6,2), reveal:0,
+        hue: Math.random()<.15?"#ffe9b0":(Math.random()<.3?"#cfe3ff":"#ffffff")
+      });
+    }
+    scene.moon={type:"full",x:rand(W*0.15,W*0.85),y:rand(H*0.12,H*0.34),r:rand(34,52)};
+  }
+}
+/**
+ * Paint a vertical linear gradient sky background.
+ * @param {string} top - Top color
+ * @param {string} bottom - Bottom color
+ */
+function paintSky(top,bottom){
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,top); g.addColorStop(1,bottom);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+}
+
+/**
+ * Draw a soft radial-gradient circle (glow effect).
+ * @param {number} x - Center X
+ * @param {number} y - Center Y
+ * @param {number} r - Radius
+ * @param {string} color - Center color (fades to transparent)
+ */
+function softCircle(x,y,r,color){
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,color); g.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); ctx.fill();
+}
+
+/**
+ * Draw a fluffy cloud composed of overlapping circles with a soft bottom shadow.
+ * @param {number} x - Cloud center X
+ * @param {number} y - Cloud center Y
+ * @param {number} s - Scale factor
+ * @param {number} alpha - Opacity (0~1)
+ */
+function drawCloud(x,y,s,alpha){
+  ctx.save(); ctx.globalAlpha=alpha;
+  const r=22*s;
+  // Multiple overlapping circles form a natural cloud shape
+  ctx.fillStyle="#ffffff";
+  ctx.beginPath();
+  ctx.arc(x, y, r*0.9, 0, 6.2832);
+  ctx.arc(x+r*0.8, y-r*0.25, r*0.7, 0, 6.2832);
+  ctx.arc(x+r*1.6, y, r*0.8, 0, 6.2832);
+  ctx.arc(x+r*0.4, y-r*0.55, r*0.6, 0, 6.2832);
+  ctx.arc(x+r*1.1, y-r*0.5, r*0.65, 0, 6.2832);
+  ctx.arc(x+r*0.8, y+r*0.2, r*0.75, 0, 6.2832);
+  ctx.fill();
+  // Soft bottom shadow
+  ctx.fillStyle="rgba(200,215,235,.25)";
+  ctx.beginPath();
+  ctx.ellipse(x+r*0.8, y+r*0.35, r*1.3, r*0.35, 0, 0, 6.2832);
+  ctx.fill();
+  ctx.restore();
+}
+/**
+ * Draw a small flower with petals and a stem that sways in the breeze.
+ * @param {number} x - Base X position
+ * @param {number} y - Base Y position
+ * @param {string} c - Petal color
+ * @param {number} s - Scale factor
+ * @param {number} ph - Phase offset for sway animation
+ * @param {number} t - Current time in seconds
+ */
+function drawFlower(x,y,c,s,ph,t){
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+  ctx.strokeStyle="#5a8a4a"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-18); ctx.stroke();
+  const sway=Math.sin(t*1.1+ph)*2;
+  ctx.translate(sway,-18);
+  for(let i=0;i<5;i++){
+    ctx.save(); ctx.rotate(i/5*6.2832);
+    ctx.fillStyle=c; ctx.beginPath(); ctx.ellipse(0,-7,4,7,0,0,6.2832); ctx.fill();
+    ctx.restore();
+  }
+  ctx.fillStyle="#fff3c4"; ctx.beginPath(); ctx.arc(0,0,4,0,6.2832); ctx.fill();
+  ctx.restore();
+}
+/**
+ * Draw a simple cartoon tree with trunk and layered canopy.
+ * @param {number} x - Base X position
+ * @param {number} y - Base Y position
+ * @param {number} s - Scale factor
+ */
+function drawTree(x,y,s){
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+  ctx.fillStyle="#9c6b3f"; ctx.strokeStyle="#7a5230"; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(-6,0); ctx.quadraticCurveTo(-3,-30,0,-46); ctx.quadraticCurveTo(3,-30,6,0); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle="#8fd08a"; ctx.strokeStyle="#5a8a4a";
+  for(let i=0;i<3;i++){
+    ctx.beginPath(); ctx.arc(-10+i*10,-50-i*6,16-i*3,0,6.2832); ctx.fill(); ctx.stroke();
+  }
+  ctx.restore();
+}
+/**
+ * Draw a boat (sailboat or cargo ship) at the given position with rocking angle.
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} s - Scale factor
+ * @param {number} rock - Rotation angle in radians
+ * @param {string} type - "sail" or "ship"
+ */
+function drawBoat(x,y,s,rock,type){
+  ctx.save(); ctx.translate(x,y); ctx.scale(s,s); ctx.rotate(rock);
+  if(type==="ship"){
+    // Cargo ship hull
+    ctx.fillStyle="#5a6a7a"; ctx.strokeStyle="#3d4a56"; ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(-30,0); ctx.lineTo(-26,10); ctx.quadraticCurveTo(0,14,26,10); ctx.lineTo(30,0);
+    ctx.lineTo(26,-2); ctx.quadraticCurveTo(0,2,-26,-2);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    // Hull stripe
+    ctx.strokeStyle="rgba(255,255,255,.3)"; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(-24,4); ctx.quadraticCurveTo(0,8,24,4); ctx.stroke();
+    // Cabin
+    ctx.fillStyle="#e8e0d4"; ctx.strokeStyle="#9a8a7a"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.rect(-14,-14,28,13); ctx.fill(); ctx.stroke();
+    // Windows
+    ctx.fillStyle="#8ecae6";
+    for(let i=0;i<4;i++){ ctx.beginPath(); ctx.arc(-9+i*6,-7,2.2,0,6.2832); ctx.fill(); }
+    // Chimney
+    ctx.fillStyle="#d94f4f";
+    ctx.beginPath(); ctx.rect(-3,-24,6,11); ctx.fill();
+    ctx.fillStyle="#333";
+    ctx.beginPath(); ctx.rect(-3,-26,6,3); ctx.fill();
+  }else{
+    // Sailboat hull
+    ctx.fillStyle="#b5763a"; ctx.strokeStyle="#8a5528"; ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(-22,0); ctx.quadraticCurveTo(-18,10,0,12);
+    ctx.quadraticCurveTo(18,10,22,0);
+    ctx.lineTo(18,-2); ctx.quadraticCurveTo(0,4,-18,-2);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle="rgba(138,85,40,.4)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(-16,3); ctx.quadraticCurveTo(0,7,16,3); ctx.stroke();
+    ctx.strokeStyle="#7a5230"; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(0,-2); ctx.lineTo(0,-34); ctx.stroke();
+    ctx.fillStyle="#fff8ee"; ctx.strokeStyle="rgba(180,160,130,.5)"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,-32); ctx.quadraticCurveTo(16,-20,14,-4); ctx.lineTo(0,-4); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle="#ff8c5a";
+    ctx.beginPath(); ctx.moveTo(0,-34); ctx.lineTo(8,-30); ctx.lineTo(0,-26); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+/**
+ * Draw a seagull with flapping wings, body, head, beak and tail.
+ * @param {object} b - Bird state {x, y, s, ph, dir}
+ * @param {number} t - Current time in seconds
+ */
+function drawSeagull(b,t){
+  ctx.save(); ctx.translate(b.x,b.y); ctx.scale((b.s||1)*(b.dir<0?-1:1),b.s||1);
+  const flap=Math.sin(t*5+b.ph)*0.5;
+  ctx.strokeStyle="#4a5568"; ctx.lineWidth=2; ctx.fillStyle="#fff";
+  // Body
+  ctx.beginPath(); ctx.ellipse(0,0,7,4,0,0,6.2832); ctx.fill();
+  ctx.strokeStyle="rgba(74,85,104,.4)"; ctx.lineWidth=1; ctx.stroke();
+  // Left wing
+  ctx.fillStyle="#f7f7f7"; ctx.strokeStyle="#4a5568"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(-3,-2);
+  ctx.quadraticCurveTo(-12,-8-flap*10,-18,-4-flap*12);
+  ctx.quadraticCurveTo(-12,-2,-3,1);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // Right wing
+  ctx.beginPath(); ctx.moveTo(3,-2);
+  ctx.quadraticCurveTo(12,-8-flap*10,18,-4-flap*12);
+  ctx.quadraticCurveTo(12,-2,3,1);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // Head
+  ctx.fillStyle="#fff";
+  ctx.beginPath(); ctx.arc(7,-1,3.5,0,6.2832); ctx.fill();
+  // Eye
+  ctx.fillStyle="#333";
+  ctx.beginPath(); ctx.arc(8,-1.5,1,0,6.2832); ctx.fill();
+  // Beak
+  ctx.fillStyle="#f5a623";
+  ctx.beginPath(); ctx.moveTo(10,-1); ctx.lineTo(14,0); ctx.lineTo(10,1.5); ctx.closePath(); ctx.fill();
+  // Tail
+  ctx.fillStyle="#e8e8e8";
+  ctx.beginPath(); ctx.moveTo(-7,0); ctx.lineTo(-12,-2); ctx.lineTo(-11,2); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+/**
+ * Draw a cartoon fish with body, belly, tail, dorsal fin, eye and blush.
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @param {number} s - Scale factor
+ * @param {boolean} flip - Whether to flip horizontally
+ * @param {number} t - Current time in seconds
+ * @param {number} ph - Phase offset for tail animation
+ * @param {number} kind - Fish species index (0~4)
+ */
+function drawFish(x,y,s,flip,t,ph,kind){
+  ctx.save(); ctx.translate(x,y); ctx.scale(s*(flip?-1:1),s);
+  const tailWag=Math.sin(t*6+ph)*0.3;
+  const fishStyles=[
+    {body:"#ff8c5a",tail:"#ffb08a",fin:"#ff7043",belly:"#ffe0cc"},  // Clownfish
+    {body:"#5ba8e0",tail:"#8ecae6",fin:"#3d7ab5",belly:"#d4eaf7"},  // Blue tang
+    {body:"#ffd23f",tail:"#ffe680",fin:"#e6a800",belly:"#fff5cc"},  // Golden fish
+    {body:"#9b59b6",tail:"#c39bd3",fin:"#7d3c98",belly:"#e8daef"},  // Violet fish
+    {body:"#2ecc71",tail:"#82e0aa",fin:"#1e8449",belly:"#d5f5e3"}   // Green puffer
+  ];
+  const st=fishStyles[kind%5];
+  // Body
+  ctx.fillStyle=st.body;
+  ctx.beginPath(); ctx.ellipse(0,0,12,7,0,0,6.2832); ctx.fill();
+  // Belly
+  ctx.fillStyle=st.belly;
+  ctx.beginPath(); ctx.ellipse(1,2,8,4,0,0,6.2832); ctx.fill();
+  // Tail
+  ctx.fillStyle=st.tail;
+  ctx.beginPath();
+  ctx.moveTo(-11,0);
+  ctx.quadraticCurveTo(-18,-6+tailWag*8,-20,-8+tailWag*10);
+  ctx.quadraticCurveTo(-15,0,-20,8+tailWag*10);
+  ctx.quadraticCurveTo(-18,6+tailWag*8,-11,0);
+  ctx.closePath(); ctx.fill();
+  // Dorsal fin
+  ctx.fillStyle=st.fin;
+  ctx.beginPath(); ctx.moveTo(-2,-6); ctx.quadraticCurveTo(2,-12,6,-6); ctx.closePath(); ctx.fill();
+  // Eye
+  ctx.fillStyle="#fff";
+  ctx.beginPath(); ctx.arc(6,-1,3,0,6.2832); ctx.fill();
+  ctx.fillStyle="#333";
+  ctx.beginPath(); ctx.arc(6.5,-1,1.5,0,6.2832); ctx.fill();
+  // Blush
+  ctx.fillStyle="rgba(255,120,120,.25)";
+  ctx.beginPath(); ctx.arc(3,2,2.5,0,6.2832); ctx.fill();
+  ctx.restore();
+}
+/**
+ * Draw a simple flying bird silhouette (reserved for other themes).
+ * @param {object} b - Bird state {x, y, ph}
+ * @param {number} t - Current time in seconds
+ */
+function drawBird(b,t){
+  // Simple flying bird reserved for other themes
+  ctx.save(); ctx.translate(b.x,b.y); ctx.strokeStyle="rgba(90,70,50,.6)"; ctx.lineWidth=2.5;
+  const w=Math.sin(t*10+b.ph)*6+8;
+  ctx.beginPath(); ctx.moveTo(-w,0); ctx.quadraticCurveTo(0,-6,0,0); ctx.quadraticCurveTo(0,-6,w,0); ctx.stroke();
+  ctx.restore();
+}
+/**
+ * Draw a fluttering butterfly with animated wing flapping.
+ * @param {object} b - Butterfly state {x, y, ph, s}
+ * @param {number} t - Current time in seconds
+ */
+function drawButterfly(b,t){
+  ctx.save(); ctx.translate(b.x,b.y);
+  const fl=Math.abs(Math.sin(t*8+b.ph))*0.8+0.2;
+  ctx.fillStyle="#ff9bb3"; ctx.globalAlpha=.9;
+  ctx.beginPath(); ctx.ellipse(-5,-2,5*fl,7,0,0,6.2832); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(5,-2,5*fl,7,0,0,6.2832); ctx.fill();
+  ctx.fillStyle="#fff3c4"; ctx.beginPath(); ctx.ellipse(-4,5,4*fl,5,0,0,6.2832); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(4,5,4*fl,5,0,0,6.2832); ctx.fill();
+  ctx.strokeStyle="#6b4f33"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(0,-4); ctx.lineTo(0,8); ctx.stroke();
+  ctx.restore();
+}
+/**
+ * Draw a full moon with outer glow and crater textures.
+ * @param {object} m - Moon config {x, y, r}
+ */
+function drawMoon(m){
+  ctx.save();
+  // Outer glow
+  const glow=ctx.createRadialGradient(m.x,m.y,m.r*0.3,m.x,m.y,m.r*2.6);
+  glow.addColorStop(0,"rgba(255,248,220,.45)"); glow.addColorStop(0.5,"rgba(255,245,210,.18)"); glow.addColorStop(1,"rgba(255,245,210,0)");
+  ctx.fillStyle=glow; ctx.beginPath(); ctx.arc(m.x,m.y,m.r*2.6,0,6.2832); ctx.fill();
+  // Full moon: complete circle + crater texture
+  const mg=ctx.createRadialGradient(m.x-m.r*0.25,m.y-m.r*0.25,m.r*0.1,m.x,m.y,m.r);
+  mg.addColorStop(0,"#fffde8"); mg.addColorStop(0.7,"#fff4cf"); mg.addColorStop(1,"#f0e0a0");
+  ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(m.x,m.y,m.r,0,6.2832); ctx.fill();
+  ctx.strokeStyle="rgba(220,200,140,.6)"; ctx.lineWidth=1.5; ctx.stroke();
+  // Craters
+  ctx.fillStyle="rgba(230,215,160,.5)";
+  ctx.beginPath(); ctx.arc(m.x-m.r*0.3,m.y-m.r*0.2,m.r*0.16,0,6.2832); ctx.fill();
+  ctx.beginPath(); ctx.arc(m.x+m.r*0.25,m.y+m.r*0.3,m.r*0.12,0,6.2832); ctx.fill();
+  ctx.beginPath(); ctx.arc(m.x+m.r*0.1,m.y-m.r*0.4,m.r*0.09,0,6.2832); ctx.fill();
+  ctx.restore();
+}
+/** Add a particle to the scene particle pool. */
+function spawnParticle(p){ scene.particles.push(p); }
+
+/**
+ * Update all particle positions and lifetimes.
+ * @param {number} dt - Delta time in seconds
+ */
+function updateParticles(dt){
+  for(let i=scene.particles.length-1;i>=0;i--){
+    const p=scene.particles[i];
+    p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=(p.g||0)*dt; p.life-=dt;
+    if(p.life<=0) scene.particles.splice(i,1);
+  }
+}
+/** Render all active particles as circles with fading opacity. */
+function drawParticles(){
+  for(const p of scene.particles){
+    ctx.save(); ctx.globalAlpha=clamp(p.life/p.max,0,1); ctx.fillStyle=p.c;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,6.2832); ctx.fill(); ctx.restore();
+  }
+}
+let wavePhase=0;
+
+/**
+ * Render the "Shout the Waves" theme scene: sky, sun, clouds, sea waves, boats, fish, seagulls.
+ * @param {number} t - Current time in seconds
+ */
+function drawWaveScene(t){
+  paintSky("#bfe9ff","#ffe9cf");
+  const sx=scene.sun.x, sy=scene.sun.y, sr=46;
+  softCircle(sx,sy,sr*2.6,"rgba(255,224,140,.45)");
+  ctx.fillStyle="#ffd35e"; ctx.beginPath(); ctx.arc(sx,sy,sr,0,6.2832); ctx.fill();
+  ctx.strokeStyle="#f4b733"; ctx.lineWidth=3; ctx.stroke();
+  for(const c of scene.clouds){
+    c.x+=c.sp*0.016; if(c.x>W+60)c.x=-60; if(c.x<-60)c.x=W+60;
+    drawCloud(c.x,c.y,c.s,0.92);
+  }
+  const horizon=H*0.58;
+  ctx.fillStyle="#bfe0a8"; ctx.beginPath(); ctx.moveTo(0,horizon);
+  for(let x=0;x<=W;x+=40) ctx.lineTo(x,horizon-14*Math.sin(x*0.01)+6);
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+  const amp=10+state.vol*70;
+  const layers=[{c:"#8fd0ff",y:horizon+6,a:amp*0.5,sp:1.0},
+                {c:"#5fb4f5",y:horizon+30,a:amp*0.8,sp:1.4},
+                {c:"#3f95e0",y:horizon+60,a:amp,sp:1.9}];
+  wavePhase+=0.03;
+  for(const L of layers){
+    ctx.fillStyle=L.c; ctx.beginPath(); ctx.moveTo(0,H);
+    for(let x=0;x<=W;x+=12){
+      const y=L.y+Math.sin(x*0.012+wavePhase*L.sp)*L.a + Math.sin(x*0.03+wavePhase*L.sp*1.7)*L.a*0.3;
+      ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.7)"; ctx.lineWidth=2; ctx.beginPath();
+    for(let x=0;x<=W;x+=12){
+      const y=L.y+Math.sin(x*0.012+wavePhase*L.sp)*L.a + Math.sin(x*0.03+wavePhase*L.sp*1.7)*L.a*0.3;
+      if(x===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  // Distant boats riding on the first wave layer (always moving right-to-left)
+  const L0=layers[0];
+  for(const bt of scene.boats){
+    bt.x-=bt.sp*0.016; if(bt.x<-60)bt.x=W+60;
+    // Calculate wave surface Y at boat's X using the same formula as the wave layer
+    const waveY=L0.y+Math.sin(bt.x*0.012+wavePhase*L0.sp)*L0.a + Math.sin(bt.x*0.03+wavePhase*L0.sp*1.7)*L0.a*0.3;
+    const bobY=waveY-4*bt.s; // Boat bottom slightly above wave surface
+    // Calculate tilt angle from wave surface slope
+    const dx=2;
+    const waveY2=L0.y+Math.sin((bt.x+dx)*0.012+wavePhase*L0.sp)*L0.a + Math.sin((bt.x+dx)*0.03+wavePhase*L0.sp*1.7)*L0.a*0.3;
+    const rock=Math.atan2(waveY2-waveY,dx);
+    drawBoat(bt.x,bobY,bt.s,rock,bt.type);
+  }
+  // Fish swimming in the sea
+  for(const item of scene.seaItems){
+    item.x+=item.vx*0.008; // Speed reduced by 50%
+    if(item.x<-40) item.x=W+40;
+    if(item.x>W+40) item.x=-40;
+    const bobY=item.y+Math.sin(t*1.5+item.ph)*4;
+    drawFish(item.x,bobY,item.s,item.vx<0,t,item.ph,item.kind);
+  }
+  // Seagulls flying (random direction, head facing forward)
+  for(const b of scene.birds){ b.x+=b.dir*b.sp*0.016; if(b.x<-40)b.x=W+40; if(b.x>W+40)b.x=-40; drawSeagull(b,t);}
+  if(state.vol>0.45 && Math.random()<state.vol){
+    const px=rand(0,W), py=horizon+rand(0,40);
+    spawnParticle({x:px,y:py,vx:rand(-40,40),vy:rand(-160,-80),g:260,r:rand(2,4),c:"rgba(255,255,255,.9)",life:rand(.5,1),max:1});
+    spawnParticle({x:px,y:py,vx:rand(-30,30),vy:rand(-120,-60),g:260,r:rand(2,3),c:"rgba(180,225,255,.9)",life:rand(.4,.9),max:.9});
+  }
+  updateParticles(0.016); drawParticles();
+}
+let starPhase=0, meteorTimer=0, galaxyReveal=0;
+
+/**
+ * Render the "Still Star Sea" theme scene: night sky, galaxy, mountains, moon, stars, meteors, hilltop, children.
+ * @param {number} t - Current time in seconds
+ */
+function drawStarScene(t){
+  // Background: deep blue to purple-pink gentle night sky
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#0b1535");
+  sky.addColorStop(.28,"#1c2761");
+  sky.addColorStop(.55,"#4e4b9a");
+  sky.addColorStop(.82,"#8a6aa8");
+  sky.addColorStop(1,"#caa4c4");
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+
+  // Milky way / nebula: gradually revealed based on progress
+  galaxyReveal=lerp(galaxyReveal, clamp(state.score/(state.target*0.8||1),0,1), 0.02);
+  if(galaxyReveal>0.05){
+    ctx.save();
+    ctx.globalAlpha=galaxyReveal*0.55;
+    ctx.translate(W*0.5,H*0.34); ctx.rotate(-0.42);
+    const band=ctx.createLinearGradient(-W*0.7,0,W*0.7,0);
+    band.addColorStop(0,"rgba(255,255,255,0)");
+    band.addColorStop(.35,"rgba(220,230,255,.5)");
+    band.addColorStop(.5,"rgba(255,246,222,.7)");
+    band.addColorStop(.65,"rgba(220,230,255,.5)");
+    band.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=band; ctx.fillRect(-W*0.7,-H*0.06,W*1.4,H*0.12);
+    ctx.rotate(0.12);
+    softCircle(-W*0.26,-H*0.05,W*0.2,"rgba(180,200,255,.35)");
+    softCircle(W*0.2,H*0.02,W*0.24,"rgba(255,220,242,.3)");
+    softCircle(0,-H*0.09,W*0.15,"rgba(255,255,255,.25)");
+    ctx.restore();
+  }
+
+  // Distant mountain silhouette
+  ctx.fillStyle="rgba(38,33,78,.5)";
+  ctx.beginPath(); ctx.moveTo(0,H*0.7);
+  for(let x=0;x<=W;x+=60) ctx.lineTo(x,H*0.7-Math.sin(x*0.008+1.3)*16-6);
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+
+  // Sea of clouds
+  ctx.fillStyle="rgba(255,242,250,.32)";
+  ctx.beginPath(); ctx.moveTo(0,H);
+  for(let x=0;x<=W;x+=50) ctx.lineTo(x,H*0.86-Math.sin(x*0.012+2)*12);
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+
+  if(scene.moon) drawMoon(scene.moon);
+  const wantReveal=clamp(state.score/(state.target*0.9||1),0,1);
+  for(const s of scene.stars){
+    s.reveal=lerp(s.reveal, wantReveal, 0.03);
+    if(s.reveal<0.02) continue;
+    const tw=0.6+0.4*Math.sin(t*s.sp+s.ph);
+    ctx.save(); ctx.globalAlpha=s.reveal*tw; ctx.fillStyle=s.hue;
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,6.2832); ctx.fill();
+    if(s.r>1.6 && s.reveal>0.5){ // Bright stars get cross-shaped starlight
+      ctx.globalAlpha=s.reveal*tw*0.6; ctx.strokeStyle=s.hue; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(s.x-6,s.y); ctx.lineTo(s.x+6,s.y);
+      ctx.moveTo(s.x,s.y-6); ctx.lineTo(s.x,s.y+6); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  meteorTimer-=0.016;
+  if(meteorTimer<=0 && galaxyReveal>0.3){
+    meteorTimer=rand(2,6);
+    const mx=rand(W*0.3,W), my=rand(0,H*0.3);
+    spawnParticle({x:mx,y:my,vx:rand(-260,-160),vy:rand(120,200),g:0,r:2,c:"#ffffff",life:1.1,max:1.1,meteor:true});
+  }
+  if(state.theme==="star" && state.vol<0.12 && state.running && Math.random()<0.3){
+    spawnParticle({x:rand(0,W),y:rand(0,H*0.5),vx:rand(-10,10),vy:rand(10,30),g:0,r:rand(1.5,3),c:"rgba(255,240,200,.9)",life:rand(1.5,3),max:3});
+  }
+  updateParticles(0.016);
+  for(const p of scene.particles){
+    if(p.meteor){
+      ctx.save(); ctx.globalAlpha=clamp(p.life/p.max,0,1);
+      const grad=ctx.createLinearGradient(p.x,p.y,p.x-p.vx*0.05,p.y-p.vy*0.05);
+      grad.addColorStop(0,"#fff"); grad.addColorStop(1,"rgba(255,255,255,0)");
+      ctx.strokeStyle=grad; ctx.lineWidth=2; ctx.beginPath();
+      ctx.moveTo(p.x,p.y); ctx.lineTo(p.x-p.vx*0.06,p.y-p.vy*0.06); ctx.stroke(); ctx.restore();
+    }
+  }
+  drawParticles();
+
+  // Foreground hilltop (rounded hill)
+  const hillTopY=H*0.82;
+  ctx.fillStyle="#241f49";
+  ctx.beginPath(); ctx.moveTo(0,H);
+  ctx.bezierCurveTo(W*0.18,hillTopY+40, W*0.34,hillTopY-52, W*0.5,hillTopY-56);
+  ctx.bezierCurveTo(W*0.66,hillTopY-52, W*0.82,hillTopY+40, W,H);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle="rgba(120,108,170,.28)"; // Soft hilltop glow
+  ctx.beginPath(); ctx.ellipse(W*0.5,hillTopY-38,W*0.2,20,0,0,6.2832); ctx.fill();
+
+  drawTwoPersons(W*0.5,hillTopY-38);
+
+  // Flowers and grass at the hill base (gentle breeze sway)
+  for(const f of scene.flowers){
+    if(f.y>H*0.9) drawFlower(f.x,f.y,f.c,f.s*0.85,f.ph,t);
+  }
+  for(const b of scene.butterflies){ b.x+=b.vx*0.01; b.y+=b.vy*0.01; if(b.x<0||b.x>W)b.vx*=-1; if(b.y<H*0.3||b.y>H*0.7)b.vy*=-1; drawButterfly(b,t);}
+}
+function drawTwoPersons(cx,baseY){
+  ctx.save();
+  ctx.translate(cx, baseY);
+  // 两个小朋友紧挨着坐在一起（参考手绘风格星空下的小朋友）
+  // 左侧女孩：微倾靠向男孩，安静陪伴
+  // 右侧男孩：右手指向星空，引导分享
+  const skin="#ffe0c2", skinB="#ffdfc0";
+  const shirtA="#f0ece4", shirtB="#eee9e0"; // 浅灰白T恤
+  const shortsA="#3d5a8a", pantsB="#7fa8cc"; // 深蓝短裤 vs 浅蓝长裤
+  const hairA="#2a1c12", hairB="#1e1409";    // 黑发
+  const hairHA="#4a3525", hairHB="#3a2818";
+
+  // ====== 左侧女孩 ======
+  ctx.save();
+  ctx.translate(-13, 0);
+  ctx.rotate(0.04); // 微微倾向右侧男孩
+  // 身体（浅灰白T恤，圆润）
+  ctx.fillStyle=shirtA; ctx.strokeStyle="rgba(0,0,0,.1)"; ctx.lineWidth=1.2;
+  ctx.beginPath();
+  ctx.moveTo(0,5); ctx.quadraticCurveTo(-10,2,-11,-8);
+  ctx.quadraticCurveTo(-10,-21,-6,-26); ctx.quadraticCurveTo(0,-29,6,-26);
+  ctx.quadraticCurveTo(10,-21,11,-8); ctx.quadraticCurveTo(10,2,0,5);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 衣袖边
+  ctx.strokeStyle="rgba(0,0,0,.06)"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(-9,-16); ctx.quadraticCurveTo(-11,-14,-10,-11); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(9,-16); ctx.quadraticCurveTo(11,-14,10,-11); ctx.stroke();
+  // 手臂放在膝上
+  ctx.fillStyle=shirtA; ctx.strokeStyle="rgba(0,0,0,.1)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(8,-15); ctx.quadraticCurveTo(12,-6,11,4);
+  ctx.quadraticCurveTo(9,7,7,4); ctx.quadraticCurveTo(7,-4,6,-13);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-8,-15); ctx.quadraticCurveTo(-12,-6,-11,4);
+  ctx.quadraticCurveTo(-9,7,-7,4); ctx.quadraticCurveTo(-7,-4,-6,-13);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 小手
+  ctx.fillStyle=skin;
+  ctx.beginPath(); ctx.arc(9,6,2.6,0,6.2832); ctx.fill();
+  ctx.beginPath(); ctx.arc(-9,6,2.6,0,6.2832); ctx.fill();
+  // 头（微仰，短发微卷）
+  const hy=-35;
+  ctx.fillStyle=skin; ctx.beginPath(); ctx.rect(-2.5,hy+8,5,5); ctx.fill(); // 脖子
+  ctx.fillStyle=hairA; ctx.strokeStyle="rgba(0,0,0,.08)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(0,hy,10.5,0,6.2832); ctx.fill(); ctx.stroke();
+  // 马尾辫造型
+  ctx.fillStyle=hairHA;
+  ctx.beginPath(); ctx.arc(-2,hy-4,5,0,6.2832); ctx.fill();
+  // 刘海弧线
+  ctx.strokeStyle=hairHA; ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(-5,hy-8); ctx.quadraticCurveTo(0,hy-11,5,hy-8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-6,hy-5); ctx.quadraticCurveTo(-2,hy-8,3,hy-6); ctx.stroke();
+  // 扎发点（头顶偏后）
+  ctx.fillStyle=hairA;
+  ctx.beginPath(); ctx.arc(0,hy-10,3,0,6.2832); ctx.fill();
+  // 发圈
+  ctx.fillStyle="#e86a8a";
+  ctx.beginPath(); ctx.ellipse(0,hy-9,3.2,2,0,0,6.2832); ctx.fill();
+  // 马尾（向右后方飘出，自然弧线）
+  ctx.strokeStyle=hairA; ctx.lineWidth=4.5; ctx.lineCap="round";
+  ctx.beginPath(); ctx.moveTo(0,hy-10);
+  ctx.quadraticCurveTo(8,hy-12,11,hy-4);
+  ctx.quadraticCurveTo(13,hy+4,10,hy+12);
+  ctx.stroke();
+  ctx.strokeStyle=hairHA; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.moveTo(1,hy-9);
+  ctx.quadraticCurveTo(7,hy-10,9,hy-3);
+  ctx.quadraticCurveTo(11,hy+4,9,hy+10);
+  ctx.stroke();
+  // 马尾发尾微散
+  ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(10,hy+12); ctx.quadraticCurveTo(12,hy+15,11,hy+17); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(10,hy+12); ctx.quadraticCurveTo(8,hy+15,9,hy+17); ctx.stroke();
+  ctx.lineCap="butt";
+  // 腮红
+  ctx.fillStyle="rgba(255,140,140,.25)";
+  ctx.beginPath(); ctx.arc(-8,hy+5,2.2,0,6.2832); ctx.fill();
+  ctx.beginPath(); ctx.arc(8,hy+5,2.2,0,6.2832); ctx.fill();
+  ctx.restore();
+
+  // ====== 右侧男孩 ======
+  ctx.save();
+  ctx.translate(13, 1);
+  ctx.rotate(-0.03); // 微微倾向左侧女孩
+  // 身体（浅灰白T恤）
+  ctx.fillStyle=shirtB; ctx.strokeStyle="rgba(0,0,0,.1)"; ctx.lineWidth=1.2;
+  ctx.beginPath();
+  ctx.moveTo(0,5); ctx.quadraticCurveTo(-10,2,-11,-8);
+  ctx.quadraticCurveTo(-10,-22,-6,-27); ctx.quadraticCurveTo(0,-30,6,-27);
+  ctx.quadraticCurveTo(10,-22,11,-8); ctx.quadraticCurveTo(10,2,0,5);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 衣袖边
+  ctx.strokeStyle="rgba(0,0,0,.06)"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(-9,-17); ctx.quadraticCurveTo(-11,-15,-10,-12); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(9,-17); ctx.quadraticCurveTo(11,-15,10,-12); ctx.stroke();
+  // 左臂放在大腿上
+  ctx.fillStyle=shirtB; ctx.strokeStyle="rgba(0,0,0,.1)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(-8,-16); ctx.quadraticCurveTo(-12,-6,-11,4);
+  ctx.quadraticCurveTo(-9,7,-7,4); ctx.quadraticCurveTo(-7,-4,-6,-14);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=skinB;
+  ctx.beginPath(); ctx.arc(-9,6,2.6,0,6.2832); ctx.fill();
+  // 右臂抬起指向星空
+  ctx.fillStyle=shirtB; ctx.strokeStyle="rgba(0,0,0,.1)"; ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(8,-18); ctx.quadraticCurveTo(13,-28,16,-40);
+  ctx.quadraticCurveTo(18,-50,20,-58); ctx.quadraticCurveTo(21,-60,20,-61);
+  ctx.quadraticCurveTo(17,-52,14,-40); ctx.quadraticCurveTo(11,-28,6,-19);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 右手（肤色）+ 食指指向星星
+  ctx.fillStyle=skinB;
+  ctx.beginPath(); ctx.arc(20,-61,3,0,6.2832); ctx.fill();
+  ctx.strokeStyle=skinB; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(20,-63); ctx.lineTo(21,-68); ctx.stroke();
+  // 头（短发，蓬松）
+  const hy2=-36;
+  ctx.fillStyle=skinB; ctx.beginPath(); ctx.rect(-2.5,hy2+8,5,5); ctx.fill();
+  ctx.fillStyle=hairB; ctx.strokeStyle="rgba(0,0,0,.08)"; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(0,hy2,11,0,6.2832); ctx.fill(); ctx.stroke();
+  // 短发蓬松质感
+  ctx.fillStyle=hairHB;
+  ctx.beginPath(); ctx.arc(-2,hy2-4,5,0,6.2832); ctx.fill();
+  ctx.strokeStyle=hairHB; ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.moveTo(1,hy2-11); ctx.quadraticCurveTo(4,hy2-6,3,hy2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(-4,hy2-10); ctx.quadraticCurveTo(-6,hy2-5,-5,hy2+1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(5,hy2-9); ctx.quadraticCurveTo(7,hy2-4,6,hy2+2); ctx.stroke();
+  // 腮红
+  ctx.fillStyle="rgba(255,140,140,.25)";
+  ctx.beginPath(); ctx.arc(-8,hy2+5,2.2,0,6.2832); ctx.fill();
+  ctx.beginPath(); ctx.arc(8,hy2+5,2.2,0,6.2832); ctx.fill();
+  ctx.restore();
+
+  ctx.restore();
+}
+/**
+ * Render the home screen background: star-sea gradient, twinkling stars, moon, clouds, ocean waves.
+ * @param {number} t - Current time in seconds
+ */
+function drawHome(t){
+  // Star-sea fusion background: deep blue-purple starry top -> warm pink dusk middle -> ocean blue bottom
+  const sky=ctx.createLinearGradient(0,0,0,H);
+  sky.addColorStop(0,"#0e1a3a");
+  sky.addColorStop(.25,"#2a3468");
+  sky.addColorStop(.45,"#6b5a9e");
+  sky.addColorStop(.6,"#c98ab0");
+  sky.addColorStop(.72,"#ffd4a8");
+  sky.addColorStop(.82,"#8fd0ff");
+  sky.addColorStop(1,"#3f95e0");
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
+
+  // Stars (twinkling in the upper half)
+  for(let i=0;i<40;i++){
+    const sx2=(Math.sin(i*127.1+33.7)*0.5+0.5)*W;
+    const sy2=(Math.sin(i*311.7+71.3)*0.5+0.5)*H*0.45;
+    const tw=0.4+0.6*Math.abs(Math.sin(t*1.2+i*0.8));
+    ctx.save(); ctx.globalAlpha=tw*0.8;
+    ctx.fillStyle=i%5===0?"#ffe9b0":"#fff";
+    ctx.beginPath(); ctx.arc(sx2,sy2,i%7===0?2:1.2,0,6.2832); ctx.fill();
+    ctx.restore();
+  }
+
+  // Moon (soft glow, random position + size on each load)
+  const mx=homeMoon.x, my=homeMoon.y, mr=homeMoon.r;
+  const mg=ctx.createRadialGradient(mx,my,mr*0.2,mx,my,mr*2.2);
+  mg.addColorStop(0,"rgba(255,248,220,.4)"); mg.addColorStop(1,"rgba(255,248,220,0)");
+  ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(mx,my,mr*2.2,0,6.2832); ctx.fill();
+  ctx.fillStyle="#fffde8"; ctx.beginPath(); ctx.arc(mx,my,mr,0,6.2832); ctx.fill();
+  ctx.fillStyle="rgba(230,215,160,.4)";
+  ctx.beginPath(); ctx.arc(mx-8,my-5,5,0,6.2832); ctx.fill();
+  ctx.beginPath(); ctx.arc(mx+7,my+8,4,0,6.2832); ctx.fill();
+
+  // Clouds (dusk-colored)
+  for(const c of scene.clouds){
+    c.x+=c.sp*0.012; if(c.x>W+60)c.x=-60; if(c.x<-60)c.x=W+60;
+    ctx.save(); ctx.globalAlpha=0.7;
+    const r=22*c.s;
+    ctx.fillStyle="rgba(255,235,220,.85)";
+    ctx.beginPath();
+    ctx.arc(c.x,c.y,r*0.9,0,6.2832);
+    ctx.arc(c.x+r*0.8,c.y-r*0.2,r*0.7,0,6.2832);
+    ctx.arc(c.x+r*1.5,c.y,r*0.8,0,6.2832);
+    ctx.arc(c.x+r*0.5,c.y-r*0.45,r*0.6,0,6.2832);
+    ctx.fill(); ctx.restore();
+  }
+
+  // Ocean waves (lower half)
+  const hY=H*0.72;
+  const waveCols=["rgba(143,208,255,.6)","rgba(95,180,245,.7)","rgba(63,149,224,.85)"];
+  for(let li=0;li<3;li++){
+    ctx.fillStyle=waveCols[li]; ctx.beginPath(); ctx.moveTo(0,H);
+    for(let x=0;x<=W;x+=14){
+      const y=hY+li*18+Math.sin(x*0.01+t*(1.0+li*0.4)+li*2)*( 8+li*4)+Math.sin(x*0.025+t*1.5)*3;
+      ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  }
+  // Wave white highlights
+  ctx.strokeStyle="rgba(255,255,255,.5)"; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  for(let x=0;x<=W;x+=14){
+    const y=hY+Math.sin(x*0.01+t)*8+Math.sin(x*0.025+t*1.5)*3;
+    if(x===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Shimmering light reflections on the sea surface
+  for(let i=0;i<12;i++){
+    const gx=(Math.sin(i*73.1+t*0.3)*0.5+0.5)*W;
+    const gy=hY+20+(Math.sin(i*127.7+t*0.5)*0.5+0.5)*(H-hY-30);
+    const ga=0.2+0.3*Math.abs(Math.sin(t*1.5+i));
+    ctx.save(); ctx.globalAlpha=ga; ctx.fillStyle="#fff";
+    ctx.beginPath(); ctx.ellipse(gx,gy,rand(2,5),1.5,0,0,6.2832); ctx.fill();
+    ctx.restore();
+  }
+}
+/** Draw the volume meter bar and history waveform on the small HUD canvas. */
+function drawMeter(){
+  const w=meter.width,h=meter.height;
+  mctx.clearRect(0,0,w,h);
+  const barH=22, gap=8;
+  mctx.fillStyle="rgba(255,255,255,.55)"; roundRect(mctx,0,0,w,barH,11); mctx.fill();
+  const fw=w*clamp(state.vol,0,1);
+  const g=mctx.createLinearGradient(0,0,w,0);
+  g.addColorStop(0,"#7fc7ff"); g.addColorStop(.6,"#ffd27a"); g.addColorStop(1,"#ff9bb3");
+  mctx.fillStyle=g; roundRect(mctx,0,0,fw,barH,11); mctx.fill();
+  const hy=barH+gap, hh=h-hy-2;
+  mctx.strokeStyle="rgba(120,90,50,.25)"; mctx.lineWidth=1; mctx.beginPath(); mctx.moveTo(0,hy+hh/2); mctx.lineTo(w,hy+hh/2); mctx.stroke();
+  if(state.history.length>1){
+    mctx.strokeStyle="#ff8fae"; mctx.lineWidth=2; mctx.beginPath();
+    const n=state.history.length;
+    for(let i=0;i<n;i++){
+      const x=w*(i/(n-1));
+      const y=hy+hh-clamp(state.history[i],0,1)*hh;
+      if(i===0)mctx.moveTo(x,y); else mctx.lineTo(x,y);
+    }
+    mctx.stroke();
+  }
+}
+/**
+ * Main game logic update: read volume, accumulate score, manage timer and history.
+ * @param {number} dt - Delta time in seconds
+ */
+function update(dt){
+  state.rawVol=getVolume();
+  if(state.audioFallback) state.fallbackVol=Math.max(0,state.fallbackVol-dt*1.6);
+  state.vol=lerp(state.vol,state.rawVol,0.18);
+  if(state.running && !state.paused && state.countdown<=0){
+    if(state.theme==="wave"){
+      const low=0.08;
+      if(state.vol>low) state.score+=(state.vol-low)*dt;
+    }else{
+      const quiet=0.16;
+      if(state.vol<quiet) state.score+=((quiet-state.vol)/quiet)*dt;
+    }
+    if(state.timeLeft!==Infinity){ state.timeLeft-=dt; if(state.timeLeft<=0){ state.timeLeft=0; finishLevel(); } }
+    state.elapsed+=dt;
+    state.histAccum+=dt;
+    if(state.histAccum>=0.1){ state.histAccum=0; state.history.push(state.vol); if(state.history.length>300) state.history.shift(); }
+    updateEncouragement();
+  }
+  if(state.countdown>0){ state.countdown-=dt; if(state.countdown<=0){ startPlay(); } }
+}
+/** Update the encouragement message based on current volume level and theme. */
+function updateEncouragement(){
+  let key=null;
+  if(state.theme==="wave"){
+    if(state.vol<0.05) key="wave_none";
+    else if(state.vol<0.18) key="wave_low";
+    else if(state.vol<0.4) key="wave_mid";
+    else key="wave_high";
+  }else{
+    if(state.vol>0.18) key="star_loud";
+    else key="star_quiet";
+  }
+  if(key!==state.encKey){
+    state.encKey=key;
+    const box=document.getElementById("encBox");
+    box.style.opacity=0;
+    setTimeout(()=>{ box.textContent=T(key); box.style.opacity=1; },200);
+  }
+}
+let lastT=performance.now();
+
+/**
+ * Main animation loop: update state and render the appropriate scene each frame.
+ * @param {number} now - High-resolution timestamp from requestAnimationFrame
+ */
+function loop(now){
+  const dt=Math.min(0.05,(now-lastT)/1000); lastT=now; const t=now/1000;
+  update(dt);
+  if(state.screen==="home") drawHome(t);
+  else if(state.theme==="wave") drawWaveScene(t);
+  else if(state.theme==="star") drawStarScene(t);
+  if(state.screen!=="home") drawMeter();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+const elHome=document.getElementById("home");
+const elHud=document.getElementById("hud");
+const elResult=document.getElementById("result");
+const centerStage=document.getElementById("centerStage");
+/**
+ * Switch the visible screen (home / playing / result).
+ * @param {string} s - Screen identifier
+ */
+function showScreen(s){
+  elHome.classList.toggle("hidden",s!=="home");
+  elHud.classList.toggle("hidden",s==="home"||s==="result");
+  elResult.classList.toggle("hidden",s!=="result");
+  state.screen=s;
+}
+/**
+ * Enter a theme: initialize scene and load the first level.
+ * @param {string} theme - "wave" or "star"
+ */
+function enterTheme(theme){
+  state.theme=theme; state.levelIndex=0;
+  buildScene(theme);
+  showScreen("playing");
+  loadLevel(0);
+}
+/**
+ * Load and reset a specific level by index.
+ * @param {number} idx - Level index in LEVELS array
+ */
+function loadLevel(idx){
+  state.levelIndex=idx;
+  const lv=LEVELS[idx];
+  state.target = (lv.duration===Infinity)? 60 : (state.theme==="star"? lv.duration*0.70 : lv.duration*0.30);
+  state.score=0; state.elapsed=0; state.history=[]; state.histAccum=0; state.encKey=null;
+  state.timeLeft=lv.duration;
+  state.running=false; state.started=false; state.paused=false;
+  state.vol=0; state.rawVol=0; state.fallbackVol=0;
+  scene.particles=[];
+  document.getElementById("hudLevelName").textContent=
+    (lv.duration===Infinity)? T(state.theme+"Tag")+" · "+T("endless") : T(state.theme+"Tag");
+  document.getElementById("hudLevelSub").textContent=
+    (lv.duration===Infinity)? T("endless") : (T("levelLabel").replace("{n}",lv.id)+" · "+lv.duration+"s");
+  document.getElementById("encBox").textContent=T("encStart");
+  document.getElementById("btnSound").textContent = state.audioFallback? "🖐" : "🔊";
+  showStartCard();
+}
+/** Display the start card overlay with level info and a begin button. */
+function showStartCard(){
+  centerStage.innerHTML="";
+  const card=document.createElement("div");
+  card.className="panel start-card"; card.style.maxWidth="420px"; card.style.padding="26px 30px";
+  const lv=LEVELS[state.levelIndex];
+  card.innerHTML='<h1 class="title" style="font-size:34px;margin-bottom:4px;">'+T(state.theme==="wave"?"themeWaveName":"themeStarName")+'</h1>'+
+    '<p class="subtitle" style="margin:0 0 14px;">'+(lv.duration===Infinity?T("endless"):(T("levelLabel").replace("{n}",lv.id)))+'</p>'+
+    '<p class="mic-hint">'+(state.theme==="wave"?T("themeWaveDesc"):T("themeStarDesc"))+'</p>'+
+    '<button class="btn" id="btnBegin">'+T("start")+'</button>';
+  centerStage.appendChild(card);
+  document.getElementById("btnBegin").onclick=beginCountdown;
+}
+/** Begin the 3-2-1 countdown before gameplay starts. */
+function beginCountdown(){
+  if(!audioReady && !state.audioFallback){
+    initAudio().then(ok=>{ if(!ok){ /* Allow starting without audio */ } });
+  }
+  centerStage.innerHTML="";
+  if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
+  state.countdown=3.0;
+  state.started=true;
+  const showOnce=(n)=>{
+    centerStage.innerHTML='<div class="count-num">'+n+'</div>';
+  };
+  showOnce(3);
+  setTimeout(()=>showOnce(2),1000);
+  setTimeout(()=>showOnce(1),2000);
+}
+/** Start active gameplay after countdown finishes. */
+function startPlay(){
+  centerStage.innerHTML="";
+  state.running=true; state.paused=false;
+}
+
+/** Stop gameplay and show the result screen. */
+function finishLevel(){ state.running=false; showResult(); }
+
+/**
+ * Compute the performance tier based on score percentage.
+ * @returns {string} Tier key: "t100", "t80", "t60", or "t0"
+ */
+function computeTier(){
+  const pct=state.target>0? state.score/state.target : 0;
+  if(pct>=1) return "t100";
+  if(pct>=0.8) return "t80";
+  if(pct>=0.6) return "t60";
+  return "t0";
+}
+/** Display the result screen with stars, encouragement text, and action buttons. */
+function showResult(){
+  const lv=LEVELS[state.levelIndex];
+  if(lv.duration===Infinity){
+    document.getElementById("resultTitle").textContent="🌟";
+    document.getElementById("resultStars").textContent=T(state.theme==="wave"?"endlessMottoWave":"endlessMottoStar");
+    document.getElementById("resultEnc").textContent=T("endlessDone").replace("{t}",Math.floor(state.elapsed));
+    buildResultBtns(true,false);
+    showScreen("result");
+    return;
+  }
+  const pct=state.target>0? state.score/state.target : 0;
+  const stars=clamp(Math.round(pct*5),1,5);
+  let title;
+  if(stars>=5) title="🏆";
+  else if(stars>=4) title="🌟";
+  else if(stars>=3) title="🌿";
+  else title="🌱";
+  document.getElementById("resultTitle").textContent=title;
+  document.getElementById("resultStars").textContent="★".repeat(stars)+"☆".repeat(5-stars);
+  let enc="";
+  if(stars<=2){
+    enc += T(state.theme==="wave"?"hintLoud":"hintQuiet");
+  }else if(stars===3){
+    enc+=T("hintUnlock");
+  }
+  document.getElementById("resultEnc").textContent=enc;
+  // Unlock next level only at 3+ stars
+  const unlockNext = (stars>=3);
+  buildResultBtns(false, unlockNext);
+  showScreen("result");
+}
+/**
+ * Build result screen action buttons (Home, Retry, optionally Next).
+ * @param {boolean} endless - Whether this was an endless level
+ * @param {boolean} unlockNext - Whether the next level is unlocked
+ */
+function buildResultBtns(endless, unlockNext){
+  const box=document.getElementById("resultBtns"); box.innerHTML="";
+  const back=document.createElement("button"); back.className="btn ghost"; back.textContent=T("back");
+  back.onclick=()=>{ showScreen("home"); };
+  box.appendChild(back);
+  const replay=document.createElement("button"); replay.className="btn gold"; replay.textContent=T("replay");
+  replay.onclick=()=>{ showScreen("playing"); loadLevel(state.levelIndex); };
+  box.appendChild(replay);
+  // Next level: only available when unlocked and not the last level
+  if(!endless && unlockNext && state.levelIndex<LEVELS.length-1){
+    const next=document.createElement("button"); next.className="btn"; next.textContent=T("next");
+    next.onclick=()=>{ showScreen("playing"); loadLevel(state.levelIndex+1); };
+    box.appendChild(next);
+  }
+}
+/** Refresh HUD elements: timer, volume, progress bar (called on interval). */
+function refreshHud(){
+  if(state.screen!=="playing") return;
+  const lv=LEVELS[state.levelIndex];
+  if(lv.duration===Infinity){
+    document.getElementById("hudTimer").textContent=fmtTime(state.elapsed);
+    document.getElementById("hudTimerLabel").textContent=T("timerRun");
+  }else{
+    document.getElementById("hudTimer").textContent=fmtTime(state.timeLeft);
+    document.getElementById("hudTimerLabel").textContent=T("timerLeft");
+  }
+  document.getElementById("volNum").textContent=Math.round(state.vol*100);
+  document.getElementById("dbNum").textContent="~ "+Math.round(20*Math.log10(state.vol+1e-4))+" dB";
+  const pct=state.target>0? clamp(state.score/state.target,0,1) : 0;
+  document.getElementById("goalFill").style.width=(pct*100).toFixed(0)+"%";
+  document.getElementById("goalPct").textContent=Math.round(pct*100)+"%";
+}
+setInterval(refreshHud,100);
+document.querySelectorAll(".theme-card").forEach(c=>{
+  c.onclick=()=>{
+    const theme=c.dataset.theme;
+    initAudio().then(ok=>{
+      if(!ok){
+        const r=confirm(T("micErr")+"\n\n"+T("micFallback")+"?");
+        if(r) state.audioFallback=true;
+      }
+      enterTheme(theme);
+    });
+  };
+});
+/** Re-render all dynamic i18n content (HUD, start card, result, encouragement) on language switch. */
+function refreshDynamicI18n(){
+  if(!state.theme) return;
+  const lv=LEVELS[state.levelIndex];
+  // Top-left level info
+  document.getElementById("hudLevelName").textContent=
+    (lv.duration===Infinity)? T(state.theme+"Tag")+" · "+T("endless") : T(state.theme+"Tag");
+  document.getElementById("hudLevelSub").textContent=
+    (lv.duration===Infinity)? T("endless") : (T("levelLabel").replace("{n}",lv.id)+" · "+lv.duration+"s");
+  // Start card (when not yet started)
+  if(state.screen==="playing" && !state.started){
+    showStartCard();
+  }
+  // Result screen
+  if(state.screen==="result"){
+    if(lv.duration===Infinity){
+      document.getElementById("resultStars").textContent=T(state.theme==="wave"?"endlessMottoWave":"endlessMottoStar");
+      document.getElementById("resultEnc").textContent=T("endlessDone").replace("{t}",Math.floor(state.elapsed));
+      buildResultBtns(true,false);
+    }else{
+      const pct=state.target>0? state.score/state.target : 0;
+      const stars=clamp(Math.round(pct*5),1,5);
+      let enc="";
+      if(stars<=2) enc+=T(state.theme==="wave"?"hintLoud":"hintQuiet");
+      else if(stars===3) enc+=T("hintUnlock");
+      document.getElementById("resultEnc").textContent=enc;
+      buildResultBtns(false, stars>=3);
+    }
+  }
+  // Encouragement text box
+  if(state.screen==="playing"){
+    const box=document.getElementById("encBox");
+    if(state.audioFallback && !state.running){
+      box.textContent=T("fallbackHint").replace("{t}",T("micFallback"));
+    }else if(state.running && state.encKey){
+      box.textContent=T(state.encKey);
+    }else if(!state.running){
+      box.textContent=T("encStart");
+    }
+  }
+}
+document.getElementById("langPill").onclick=()=>{ lang= lang==="zh"?"en":"zh"; localStorage.setItem("lang",lang); setI18n(); refreshDynamicI18n(); refreshHud(); };
+document.getElementById("btnHome").onclick=()=>{ state.running=false; showScreen("home"); };
+document.getElementById("btnBack").onclick=()=>{ state.running=false; showScreen("home"); };
+document.getElementById("btnSound").onclick=()=>{
+  if(state.audioFallback){
+    state.audioFallback=false; state.fallbackVol=0;
+    document.getElementById("btnSound").textContent="🔊";
+    document.getElementById("encBox").textContent=T("encStart");
+  }else{
+    state.audioFallback=true;
+    document.getElementById("btnSound").textContent="🖐";
+    document.getElementById("encBox").textContent=T("fallbackHint").replace("{t}",T("micFallback"));
+  }
+};
+window.addEventListener("keydown",e=>{
+  if(state.audioFallback && state.running && e.code==="Space"){ state.fallbackVol=Math.max(state.fallbackVol,0.85); }
+});
+window.addEventListener("pointerdown",e=>{
+  if(state.audioFallback && state.running && e.target.id!=="btnSound" && e.target.id!=="btnBack"){
+    state.fallbackVol=Math.max(state.fallbackVol,0.7);
+  }
+});
+/** Render the info/about modal content with current language and version. */
+function renderInfo(){
+  document.getElementById("infoTitle").textContent=T("infoTitle");
+  document.getElementById("infoBody").innerHTML=
+    '<h3>'+T("infoHowTo")+'</h3><p style="white-space:pre-line;">'+T("infoHowToBody")+'</p>'+
+    '<h3>'+T("infoAbout")+'</h3><p style="white-space:pre-line;">'+T("infoAboutBody")+'</p>'+
+    '<p style="text-align:center;margin-top:18px;font-size:13px;color:#8a6d4f;opacity:.7;">V1.0.1</p>';
+  document.getElementById("btnInfoClose").textContent=T("infoClose");
+}
+document.getElementById("btnInfo").onclick=()=>{ renderInfo(); document.getElementById("infoModal").classList.remove("hidden"); };
+document.getElementById("btnInfoClose").onclick=()=>{ document.getElementById("infoModal").classList.add("hidden"); };
+document.getElementById("infoModal").onclick=(e)=>{ if(e.target.id==="infoModal") document.getElementById("infoModal").classList.add("hidden"); };
+setI18n();
+showScreen("home");
+</script>
+</body>
+</html>
