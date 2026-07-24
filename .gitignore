@@ -1,5 +1,20 @@
 ﻿# OS / IDE
 .DS_Store
 Thumbs.db
+Desktop.ini
 .codebuddy/
 .idea/
+*.iml
+*.log
+
+# Node / build
+node_modules/
+dist/
+build/
+.cache/
+*.tmp
+
+# Editor / local
+.vscode/
+*.swp
+*~
